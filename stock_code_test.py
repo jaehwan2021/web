@@ -22,7 +22,7 @@ price = date.find_next_sibling("td")
 print(date.text)
 print(price.text)
 
-
+# push test
 
 
 
