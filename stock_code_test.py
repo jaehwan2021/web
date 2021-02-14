@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
-import datetime
+import time
 
 
 #url 기반 웹 크롤링
@@ -23,23 +23,25 @@ soup = BeautifulSoup(req.text, 'html.parser')
 
 
 
+# 현재 시간을 초 단위로 나타냄 // 86400을 통해 일 단위로 변환
+time = int(time.time() // 86400)
 
-#작업중
+print(time*86400)
 
-time = input()
+# 1613288385
+# 1613088000 / 86400 -> 18670일 -> 2월 14일 //하루는 86400초
 
-#18667 = 2월 9일
+# 일 단위 날짜에 따른 종가 저장  -> 나중엔 이 data를 어딘가에 저장해야함
+for i in range(40):
+    # 날짜에 따른 종가 출력
+    try:
+        date = soup.find("td", attrs={'data-real-value':'{}'.format(time*86400 - (i*86400))})
+        price = date.find_next_sibling("td")
+        print(date.text)
+        print(price.text)
+    # 휴장 하는 날은 제외
+    except:
+        None
 
-date = soup.find("td", attrs={'data-real-value':'{}'.format(time)})
-price = date.find_next_sibling("td")
-
-print(date.text)
-print(price.text)
 
 
-
-#sdfsdf
-#test
-
-
-#dsf
