@@ -20,16 +20,26 @@
 # time.sleep(3)
 # print(driver.find_element_by_id("content").text)
 # driver.close()
+#
+# import numpy as np
+#
+# print(np.matrix([ [ 1, 2 ], [ 2, 3 ]]))
+#
+#
+#
+# '''
+# c = close
+# h = high
+# l = low
+# o = open
+# '''
 
-import numpy as np
-
-print(np.matrix([ [ 1, 2 ], [ 2, 3 ]]))
 
 
+def souping(varialbe):
+    #url 기반 웹 크롤링
+    save = varialbe
+    url = 'https://www.investing.com/equities/{}-historical-data'.format(save)
+    print(url)
 
-'''
-c = close
-h = high
-l = low
-o = open
-'''
+souping("apple")
