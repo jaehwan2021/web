@@ -5,6 +5,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import time
 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 """ 마리아db - python 연동후 data 입력 code https://reddb.tistory.com/139 참고해서 HeidiSQL 다운받아 확인가능 호스트명/IP 180.65.23.251 사용자 root 암호 stockanalysis
 
@@ -40,7 +44,8 @@ def souping(company_name):
 
 
     #url 기반 웹 크롤링
-    url = 'https://kr.investing.com/equities/{}-historical-data'.format(data_save_company_name)
+    # url = 'https://kr.investing.com/equities/{}-historical-data'.format(data_save_company_name)
+     url = 'https://www.investing.com/equities/jp-morgan-chase-historical-data'
 
     #서버 접속간 사용자 고유 코드 (구글에 what is my user agent 검색 및 복붙해서 사용할 것)
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.68"}
@@ -50,6 +55,25 @@ def souping(company_name):
 
     # req가 비정상적으로 가져와질 경우 code종료
     req.raise_for_status()
+
+   #d = webdriver.Chrome(executable_path='C:\project\chromedriver')
+    d = webdriver.Chrome(executable_path='C:\project\chromedriver')
+    d.get('https://www.investing.com/funds/lansforsakringar-global-indexnara-historical-data')
+    try:  # attempt to dismiss banners that could block later clicks
+        WebDriverWait(d, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".closer"))).click()
+        d.find_element_by_css_selector('.closer').click()
+    except:
+        pass
+    d.find_element_by_id('widgetFieldDateRange').click()  # show the date picker
+    sDate = d.find_element_by_id('startDate')  # set start date input element into variable
+    sDate.clear()  # clear existing entry
+    sDate.send_keys('01/18/2019')  # add custom entry
+    eDate = d.find_element_by_id('endDate')  # repeat for end date
+    eDate.clear()
+    eDate.send_keys('01/28/2019')
+    d.find_element_by_id('applyBtn').click()  # submit changes
+
+
 
     #req해온 text를 파싱해서 soup란 객체에 저장
     soup = BeautifulSoup(req.text, 'html.parser')
