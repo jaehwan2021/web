@@ -37,7 +37,8 @@ conn.close() ## 종료
 url = 'https://www.investing.com/equities/jp-morgan-chase-historical-data'
 
 #서버 접속간 사용자 고유 코드 (구글에 what is my user agent 검색 및 복붙해서 사용할 것)
-headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36"}
+headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"}
+#headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36"}
 
 #해당 url을 user-agent 정보를 통해 가져옴
 req = requests.get(url, headers=headers)
@@ -57,15 +58,29 @@ print(time*86400)
 
 # 1613288385
 # 1613088000 / 86400 -> 18670일 -> 2월 14일 //하루는 86400초
-
+soup.find("picker")
+print(soup.text)
 # 일 단위 날짜에 따른 종가 저장  -> 나중엔 이 data를 어딘가에 저장해야함
 for i in range(40):
     # 날짜에 따른 종가 출력
     try:
         date = soup.find("td", attrs={'data-real-value':'{}'.format(time*86400 - (i*86400))})
-        price = date.find_next_sibling("td")
-        print(date.text)
-        print(price.text)
+        td_price = date.find_next_sibling("td")
+        td_open = td_price.find_next_sibling("td")
+        td_high = td_open.find_next_sibling("td")
+        td_low = td_high.find_next_sibling("td")
+        td_vol = td_low.find_next_sibling("td")
+        td_change = td_vol .find_next_sibling("td")
+        print(date.text+" "+td_price.text+" " + td_open.text + " " + td_high.text + " " + td_low.text + " "
+              + td_vol.text + " " + td_change.text)
+        #print(td_vol.text + " " + td_change.text)
+        #print(date.text)
+        #print(td_price.text)
+        #print(td_open.text)
+        #print(td_high.text)
+        #print(td_low.text)
+        #print(td_vol.text)
+        #print(td_change.text)
     # 휴장 하는 날은 제외
     except:
         None
