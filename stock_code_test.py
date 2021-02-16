@@ -55,9 +55,10 @@ def souping(company_name):
 
     return soup
 
-# 원하는 회사명 입력하면 soup 객체 형태로 변환 -> 추후
-soup = souping("apple-computer-inc")
+# 원하는 회사명 입력하면 soup 객체 형태로 변환 ->
+# 추후 https://www.investing.com/stock-screener/?sp=country::5|sector::a|industry::a|equityType::a%3Ceq_market_cap;{}.format("1~20") 여기서 회사이름 따올예정
 
+soup = souping("apple-computer-inc")
 
 # 현재 시간을 초 단위로 나타냄 // 86400을 통해 일 단위로 변환
 time = int(time.time() // 86400)
