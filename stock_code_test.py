@@ -32,22 +32,31 @@ conn.close() ## 종료
 
 """
 
+# https://www.investing.com/equities/ + "variable" + -historical-data 형태 url의 파싱한 data를 return하는 함수로 정의
+def souping(company_name):
 
-#url 기반 웹 크롤링
-url = 'https://www.investing.com/equities/jp-morgan-chase-historical-data'
+    #입력받은 변수를 함수정의에 사용하기 위해 임의의 변수에 저장
+    data_save_company_name = company_name
 
-#서버 접속간 사용자 고유 코드 (구글에 what is my user agent 검색 및 복붙해서 사용할 것)
-headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36"}
+    #url 기반 웹 크롤링
+    url = 'https://kr.investing.com/equities/{}-historical-data'.format(data_save_company_name)
 
-#해당 url을 user-agent 정보를 통해 가져옴
-req = requests.get(url, headers=headers)
+    #서버 접속간 사용자 고유 코드 (구글에 what is my user agent 검색 및 복붙해서 사용할 것)
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.68"}
 
-# req가 비정상적으로 가져와질 경우 code종료
-req.raise_for_status()
+    #해당 url을 user-agent 정보를 통해 가져옴
+    req = requests.get(url, headers=headers)
 
-#req해온 text를 파싱해서 soup란 객체에 저장
-soup = BeautifulSoup(req.text, 'html.parser')
+    # req가 비정상적으로 가져와질 경우 code종료
+    req.raise_for_status()
 
+    #req해온 text를 파싱해서 soup란 객체에 저장
+    soup = BeautifulSoup(req.text, 'html.parser')
+
+    return soup
+
+# 원하는 회사명 입력하면 soup 객체 형태로 변환 -> 추후
+soup = souping("apple-computer-inc")
 
 
 # 현재 시간을 초 단위로 나타냄 // 86400을 통해 일 단위로 변환
@@ -70,5 +79,5 @@ for i in range(40):
     except:
         None
 
-
+print("end")
 
