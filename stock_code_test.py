@@ -6,31 +6,28 @@ import matplotlib.pyplot as plt
 import time
 
 
-""" 마리아db - python 연동후 data 입력 code https://reddb.tistory.com/139 참고해서 HeidiSQL 다운받아 확인가능 호스트명/IP 180.65.23.251 사용자 root 암호 stockanalysis
+# 마리아db - python 연동후 data 입력 code https://reddb.tistory.com/139 참고해서 HeidiSQL 다운받아 확인가능
+# 호스트명/IP 180.65.23.251 사용자 root 암호 stockanalysis
 
 # mysql - python 연동 위한 import
 import pymysql
 
-# 전역변수 선언부
-conn = None
-cur = None
-sql=""
+conn = pymysql.connect(host='180.65.23.251', user='root', password='stockanalysis', db='pythonDB', charset='utf8') ## 해당 db에 연결 접속정보
 
-# 메인 코드 
-conn = pymysql.connect(host='180.65.23.251', user='root', password='stockanalysis', db='pythonDB', charset='utf8') ## 접속정보
-cur = conn.cursor() ## 커서생성
+try:
+    cur = conn.cursor() ## 커서생성
+    data1 = input("사용자 ID를 입력하세요(엔터 클릭 시 종료): ") # data1변수에 ID 입력받기
+    data2 = input("사용자 이름을 입력하세요: ")
+    data3 = input("사용자 이메일을 입력하세요: ")
+    data4 = input("사용자 출생연도를 입력하세요: ")
+    sql = "INSERT INTO userTable VALUES('" + data1 + "','" + data2 + "','" + data3 + "'," + data4 + ")" # sql변수에 INSERT SQL문 입력
+    cur.execute(sql) # 커서로sql 실행
+    conn.commit() ## 저장
 
-data1 = input("사용자 ID를 입력하세요(엔터 클릭 시 종료): ") # data1변수에 ID 입력받기
-data2 = input("사용자 이름을 입력하세요: ")
-data3 = input("사용자 이메일을 입력하세요: ")
-data4 = input("사용자 출생연도를 입력하세요: ")
-sql = "INSERT INTO userTable VALUES('" + data1 + "','" + data2 + "','" + data3 + "'," + data4 + ")" # sql변수에 INSERT SQL문 입력
-cur.execute(sql) # 커서로sql 실행
+finally: # database를 conn으로 연 후 항상 닫아주도록 finally 설정
+    conn.close()
 
-conn.commit() ## 저장
-conn.close() ## 종료
 
-"""
 
 # https://www.investing.com/equities/ + "variable" + -historical-data 형태 url의 파싱한 data를 return하는 함수로 정의
 def souping(company_name):
