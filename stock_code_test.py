@@ -40,7 +40,7 @@ def souping(company_name):
 
 
     #url 기반 웹 크롤링
-    url = 'https://kr.investing.com/equities/{}-historical-data'.format(data_save_company_name)
+    url = 'https://www.investing.com/equities/{}-historical-data'.format(data_save_company_name)
 
     #서버 접속간 사용자 고유 코드 (구글에 what is my user agent 검색 및 복붙해서 사용할 것)
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.68"}
@@ -56,7 +56,7 @@ def souping(company_name):
 
     return soup
 
-# 원하는 회사명 입력하면 soup 객체 형태로 변환 ->
+# souping()는 원하는 회사명 입력하면 soup 객체 형태로 변환
 # 추후 https://www.investing.com/stock-screener/?sp=country::5|sector::a|industry::a|equityType::a%3Ceq_market_cap;{}.format("1~20") 여기서 회사이름 따올예정
 
 soup = souping("apple-computer-inc")
