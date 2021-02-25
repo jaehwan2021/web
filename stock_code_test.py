@@ -10,16 +10,27 @@ import pymysql # mysql - python 연동 위한 import
 
 def save(file_name):
 
-    conn = pymysql.connect(host='180.65.23.251', user='root', password='stockanalysis', db='pythondb', charset='utf8') ## 해당 db에 연결
+    list_Data_value = [1, 2, 3, 4] # 날짜 값을 나중에 LIST로 받으면 이런 형태
+    list_Data_date = [5, 6, 7, 8] # 시장 종가값을 나중에 LIST로 받으면 이런 형태
+
+    conn = pymysql.connect(host='180.65.23.251', user='root', password='stockanalysis', db='pythondb',
+                           charset='utf8')  ## 해당 db에 연결
 
     try:
-        cur = conn.cursor() ## 커서생성
-        company_code = file_name #table 이름 생성간 '-' 나 숫자 입력이 불가능함.. 일단 임시로 아무거나 적어둠
-        sql = "CREATE TABLE IF NOT EXISTS " + company_code + "(date DATE, value FLOAT)" # 파일 생성
-        cur.execute(sql) # 커서로sql 실행
-        conn.commit() ## 저장
+        cur = conn.cursor()  ## 커서생성
+        company_code = file_name  # table 이름 생성간 '-' 나 숫자 입력이 불가능함.. 일단 임시로 아무거나 적어둠
+        sql = "CREATE TABLE IF NOT EXISTS " + company_code + "(date INT, value INT)"  # 파일 생성
+        cur.execute(sql)  # 커서로sql 실행
 
-    finally: # database를 conn으로 연 후 항상 닫아주도록 finally 설정
+        for i in range(3): ## 날짜와 시장 종가를 for문을 이용해 자동으로 저장되게 함
+
+            sql = "insert into " + company_code + "(date, value) values (%s, %s)"
+            cur.execute(sql, (list_Data_date[i], list_Data_value[i]))
+
+
+        conn.commit()  ## 저장
+
+    finally:  # database를 conn으로 연 후 항상 닫아주도록 finally 설정
         conn.close()
 
 # https://www.investing.com/equities/ + "variable" + -historical-data 형태 url의 파싱한 data를 return하는 함수로 정의
