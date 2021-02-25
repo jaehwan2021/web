@@ -3,10 +3,8 @@
 import pymysql
 
 
-def save(file_name):
+def save(file_name, date, value):
 
-    list_Data_value = [1, 2, 3, 4] #
-    list_Data_date = [5, 6, 7, 8]
 
     conn = pymysql.connect(host='180.65.23.251', user='root', password='stockanalysis', db='pythondb',
                            charset='utf8')  ## 해당 db에 연결
@@ -17,10 +15,10 @@ def save(file_name):
         sql = "CREATE TABLE IF NOT EXISTS " + company_code + "(date INT, value INT)"  # 파일 생성
         cur.execute(sql)  # 커서로sql 실행
 
-        for i in range(3):
+        for i in range(len(date) - 1):
 
             sql = "insert into " + company_code + "(date, value) values (%s, %s)"
-            cur.execute(sql, (list_Data_date[i], list_Data_value[i]))
+            cur.execute(sql, (date[i], value[i]))
 
 
         conn.commit()  ## 저장
@@ -28,7 +26,12 @@ def save(file_name):
     finally:  # database를 conn으로 연 후 항상 닫아주도록 finally 설정
         conn.close()
 
-save("deve")
+
+list_Data_value = [1, 2, 3, 4] #
+list_Data_date = [5, 6, 7, 8]
+
+
+save("deve", list_Data_date, list_Data_value)
 
 # 마리아db - python 연동후 data 입력 code https://reddb.tistory.com/139 참고해서 HeidiSQL 다운받아 확인가능
 # 호스트명/IP 180.65.23.251 사용자 root 암호 stockanalysis

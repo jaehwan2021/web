@@ -8,10 +8,7 @@ import time
 
 import pymysql # mysql - python 연동 위한 import
 
-def save(file_name):
-
-    list_Data_value = [1, 2, 3, 4] # 날짜 값을 나중에 LIST로 받으면 이런 형태
-    list_Data_date = [5, 6, 7, 8] # 시장 종가값을 나중에 LIST로 받으면 이런 형태
+def save(file_name, date, value): ## "file_name", list, list 형식의 data를 입력하면 마리아db에 해당 파일 이름의 date와 value열에 data가 자동으로 입력됨
 
     conn = pymysql.connect(host='180.65.23.251', user='root', password='stockanalysis', db='pythondb',
                            charset='utf8')  ## 해당 db에 연결
@@ -22,10 +19,10 @@ def save(file_name):
         sql = "CREATE TABLE IF NOT EXISTS " + company_code + "(date INT, value INT)"  # 파일 생성
         cur.execute(sql)  # 커서로sql 실행
 
-        for i in range(3): ## 날짜와 시장 종가를 for문을 이용해 자동으로 저장되게 함
+        for i in range(len(date) - 1):
 
             sql = "insert into " + company_code + "(date, value) values (%s, %s)"
-            cur.execute(sql, (list_Data_date[i], list_Data_value[i]))
+            cur.execute(sql, (date[i], value[i]))
 
 
         conn.commit()  ## 저장
