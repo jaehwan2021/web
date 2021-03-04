@@ -1,10 +1,13 @@
-/학교/학년/반/학생[2]
-//*[@학번="1-1-5"]
+from pandas_datareader import data
+import datetime
+import yfinance as yf
+import time
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
 
-# / 는 단순 하위 태그로 변경 하는 것, //* 는 태그 무시 하여 찾는 것
-
-
-#네이버 실습
-
-//*[@id="account"]/a
-/html/body/div[2]/div[3]/div[3]/div/div[2]/a
+# 정규화 관계형 데이터베이스에서 중복을 최소화하기 위해 데이터를 구조화 하는 작업
+def min_max_scaling(x):
+    x_np = np.asarray(x)
+    return (x_np - x_np.min()) / (x_np.max() - x_np.min() + 1e-7)  # 1e-7은 0으로 나누는 오류 예방차

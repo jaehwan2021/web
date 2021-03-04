@@ -1,136 +1,99 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-    collect_global_stock_in_investing.py
-"""
-from urllib.request import urlopen, Request
-from bs4 import BeautifulSoup as bs
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
-import csv
+#pip intsall --upgrade pip
+#pip intsall tensorflow
+#pio install keras-on-lstm
+#pip install pandas_datareader
+#pip install yfinance #야후 주식 데이터 불러오기
+
+from pandas_datareader import data
+import datetime
+import yfinance as yf
+import time
+import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
 
-def arrayToNumeric(a):
-    nums = []
-    for i in range(0,len(a)):
-        nums.append(re.sub(r'[a-zA-Z%]', r'', a[i].text))
-    return nums
-### a로 받은 무언가(주소 같음)를 리스트 형태의 숫자로 반환함
+yf.pdr_override()
+# tf.set_random_seed(777)
 
-def get_stock_info_investing(country_num, page_num):
-    """
-    :param country_num: 국가번호 investing.com에서 사용
-    :return: 종목 url, 종목명, 종목코드(로컬코드) 테이블
-    """
-    driver = webdriver.PhantomJS()
-    stock_info = []
+start_date = '2010-01-01'
+name = '034730.KS'
+stock = data.get_data_yahoo(name, start_date)
+stock = stock[:-1]
 
-    url = "https://www.investing.com/stock-screener/?sp=country::" + str(country_num) +"|sector::a|industry::a|equityType::a<eq_market_cap;" + str(page_num) +""
-    driver.get(url)
-    element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "resultsTable")))
-    html_text = driver.page_source
-    soup = bs(html_text, 'lxml')
-    ref_tags = soup.find_all(href=True, title=True)
 
-    for ref_tag in ref_tags:
-        if "/equities/" in ref_tag['href']:
-            stock_url = ref_tag['href'].replace("/equities/","")
-            name = ref_tag.text
-            d = soup.find(text=name)
-            symbol = d.find_next("td").text
-            stock_info.append([stock_url,name,symbol])
+# 정규화 관계형 데이터베이스에서 중복을 최소화하기 위해 데이터를 구조화 하는 작업 / x를 numpy 형식의 0~1 사이 값으로 만듬
+def min_max_scaling(x):
+    x_np = np.asarray(x)
+    return (x_np - x_np.min()) / (x_np.max() - x_np.min() + 1e-7)  # 1e-7은 0으로 나누는 오류 예방차
 
-    return(np.array(stock_info))
 
-def write_to_csvfile(filename, array_data):
-    csv_file = open(filename, "w",newline='')
-    cw = csv.writer(csv_file , delimiter=',', quotechar='|')
-    for row in array_data:
-        cw.writerow(row)
+# 역정규화 : 정규화된 값을 원래의 값으로 되돌림
+def reverse_min_max_scaling(org_x, x):  # 종가 예측값
+    org_x_np = np.asarray(org_x)
+    x_np = np.asarray(x)
+    return (x_np * (org_x_np.max() - org_x_np.min() + 1e-7)) + org_x_np.min()
 
-    csv_file.close()
+input_dcm_cnt = 10 #입력데이터의 컬럼 개수
+output_dcm_cnt = 1 #결과데이터의 컬럼 개수
 
-def read_from_csvfile(filename):
+seq_length = 28 #1개 시퀸스의 길이(시계열데이터 입력 개수)
+rnn_cell_hidden_dim = 20 #각 셀의 히든 출력 크기
+forget_bias = 1.0 #망각편향(기본값 1.0)
+num_stacked_layers = 1 #Stacked LSTM Layers 개수
+keep_prob = 1.0 #Dropout 할때 Keep할 비율
 
-    csv_file = open(filename, "r",newline='')
-    cr = csv.reader(csv_file , delimiter=',', quotechar='|')
-    data=[]
-    for row in cr:
-        data.append(row)
+epoch_num = 1000 #에포크 횟수 (몇회 반복 학습)
+learning_rate = 0.01 #학습률
 
-    csv_file.close()
-    return data
+stock_info = stock.values[1:].astype(np.float) # 날짜를 제외한 값([1:])을 np형태의 행렬data로 저장 (.astype(np.float))
 
-def batch_save_country_stock_info(country_num):
-    """
+price = stock_info[:,:-1] # data 슬라이싱을 통한 가격만 표현 형태 (행 시작:도착(-1):간격 , 열 시작:도착(-1):간격)
 
-    국가의 종목코드와 종목 url이 포함되어 있는 .CSV 파일을 만든다.
-    종목 URL은 INVETING.COM에서
-    """
-    stock_info = get_stock_info_investing(country_num, 1)
+norm_price = min_max_scaling(price)
+norm_price.shape #Jupyter Notebook, etc environment = print(price.shape) -> .shape은 그냥 차원을 표시해줌
 
-    if len(stock_info)>=50:
-        for page_num in range(2,300):
-            new_stock_info = get_stock_info_investing(country_num, page_num)
-            stock_info = np.concatenate((stock_info,new_stock_info), axis=0)
-            print(str(page_num) + " Loading success!")
-            #종목 숫자가 50개 이하이면
-            if len(new_stock_info)<50:
-                print("Done!")
-                break
 
-    write_to_csvfile("stock"+ str(country_num)+ ".csv", stock_info)
+volume = stock_info[:,-1:] # data 슬라이싱을 통한 볼륨만 표현
+norm_volume = min_max_scaling(volume)
+norm_volume.shape
 
-################## 종목 코드 수집 과정
 
-def get_fs_soup_object_from_inveting(company_url,freq="a",fs_type="BS"):
-    """
-    재무상태표, 손익계산서, 현금흐름표 계정에 있는 데이터를 가져온다.
-    fs_type : BS, IS, CF
 
-    return : soup 객체를 반환한다.
-    """
-    fs_dict = {'BS': 'balance-sheet', 'IS': 'income-statement', 'CF': 'cash-flow'}
+x = np.concatenate((norm_price, norm_volume), axis=1) # 다시 정규화된 price랑 volume값을 붙임 -> 왜 한거임?
+y = x[:, [-2]] # x의 -2번쨰 열(종가)
 
-    url = "https://www.investing.com/equities/" + company_url + "-" + fs_dict[fs_type]
-    driver = webdriver.PhantomJS()
-    driver.get(url)
+dataX = []
+dataY = []
 
-    if freq=="a":
-        driver.find_element_by_css_selector("a.newBtn.toggleButton.LightGray").click()
-        myElem = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'header_row')))
 
-    html_text = driver.page_source
-    soup = bs(html_text, 'lxml')
 
-    return soup
+for i in range(0, len(y) - seq_length):
+    _x = x[i:i+seq_length]
+    _y = y[i+seq_length]
+    # if i == 0:
+    #     print(_x, "->", _y)
+    dataX.append(_x) # dataX에는 1개의 행당 6개의 data가 총 28행 저장됨, 그리고 이게 for문을 통해 +1씩 반복
+    dataY.append(_y) # 해당 x data의 출력 타겟  (그 다음날 종가)
 
-def get_fs_data_from_soup(soup,item, n=1):
 
-    """
-    soup 객체에서 item을 찾아서 반환해준다.
-    """
-    results = []
-    try:
-        d = soup.find_all(text=item)
-        d_ = d[0].find_all_next("td", limit=n)
-        for r in d_:
-            results.append(r.text)
-    except:
-        print("error")
-        return None
-    return results
+train_size = int(len(dataY) * 0.7)
+test_size = len(dataY) - train_size
 
-# 예제 : 엔비디아의 정보 가져오기
+trainX = np.array(dataX[0:train_size])
+trainY = np.array(dataY[0:train_size])
 
-company_url = "nvidia-corp"
-is_soup = get_fs_soup_object_from_inveting(company_url,'a',"IS")
-bs_soup = get_fs_soup_object_from_inveting(company_url,'a',"BS")
-cf_soup = get_fs_soup_object_from_inveting(company_url,'a',"CF")
+testX = np.array(dataX[train_size:len(dataX)])
+testY = np.array(dataY[train_size:len(dataY)])
 
-get_fs_data_from_soup(is_soup,"Operating Income",4)
-get_fs_data_from_soup(bs_soup,"Total Inventory",4)
-get_fs_data_from_soup(cf_soup,"Cash From Operating Activities",4)
+
+X = tf.placeholder(tf.float32, [None,seq_length, input_dcm_cnt])
+Y = tf.placeholder(tf.float32, [None,1])
+print("X:",X)
+print("Y:",Y)
+
+targets = tf.placeholder(tf.float32, [None, 1])
+predictions = tf.placeholder(tf.float32, [None, 1])
+print("targets", targets)
+print("predictions", predictions)

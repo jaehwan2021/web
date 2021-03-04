@@ -1,7 +1,18 @@
-import requests
-url = "http://nadocoding.tistory.com"
-headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36"}
-res = requests.get(url, headers=headers) # 유저에이전트 값을 넣어준 상태로 url 접속 진행
-res.raise_for_status() # 200 code 아닐시 code err 발생
-with open("nadocoding.html", "w", encoding="utf8") as f:
-    f.write(res.text)
+
+
+import numpy as np
+
+
+# 정규화 관계형 데이터베이스에서 중복을 최소화하기 위해 데이터를 구조화 하는 작업
+def min_max_scaling(x):
+    x_np = np.asarray(x)
+    return (x_np - x_np.min()) / (x_np.max() - x_np.min() + 1e-7)  # 1e-7은 0으로 나누는 오류 예방차
+
+
+list_test = [0, 1, 2, 3]
+
+test_numpy = np.array(list_test)
+
+print(test_numpy)
+print(test_numpy.min())
+print(test_numpy - 1)
